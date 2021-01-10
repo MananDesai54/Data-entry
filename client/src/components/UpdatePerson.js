@@ -13,7 +13,7 @@ const UpdatePerson = (props) => {
 
   useEffect(() => {
     const getPerson = async () => {
-      const response = await fetch(`http://127.0.0.1:5000/${id}`);
+      const response = await fetch(`https://post-data-api.herokuapp.com/${id}`);
       const body = await response.json();
       if (body.message) {
         setResponse({ message: body.message, type: "danger" });
@@ -33,7 +33,7 @@ const UpdatePerson = (props) => {
 
   const submitHandler = async (e) => {
     e.preventDefault();
-    const response = await fetch(`http://127.0.0.1:5000/${id}`, {
+    const response = await fetch(`https://post-data-api.herokuapp.com/${id}`, {
       method: "PUT",
       body: JSON.stringify({
         name: person.name,

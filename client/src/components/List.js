@@ -13,7 +13,7 @@ const List = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const response = await fetch("http://127.0.0.1:5000/data");
+      const response = await fetch("https://post-data-api.herokuapp.com/data");
       const body = await response.json();
       body.sort(function (a, b) {
         return new Date(a.dueDate) - new Date(b.dueDate);
@@ -52,13 +52,13 @@ const List = () => {
   }, [showBy, data, search]);
 
   const deletePerson = async (id) => {
-    const response = await fetch(`http://127.0.0.1:5000/${id}`, {
+    const response = await fetch(`https://post-data-api.herokuapp.com/${id}`, {
       method: "DELETE",
     });
     const body = await response.json();
     if (body.success) {
       const updatedData = data.filter((person) => person._id !== id);
-      setShowData(updatedData);
+      setData(updatedData);
     } else {
       setError("Unable to delete");
       setTimeout(() => {
@@ -142,7 +142,10 @@ const List = () => {
                 <td>
                   {moment(new Date(person.dueDate)).format("Do MMMM YYYY")}
                 </td>
-                <td onClick={() => deletePerson(person._id)}>
+                <td
+                  style={{ cursor: "pointer" }}
+                  onClick={() => deletePerson(person._id)}
+                >
                   <i className="material-icons red-text">delete</i>
                 </td>
               </tr>
