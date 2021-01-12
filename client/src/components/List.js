@@ -43,14 +43,24 @@ const List = () => {
     } else if (showBy === "month") {
       updatedData = updatedData.filter(
         (person) =>
-          new Date(person.dueDate).getMonth() === new Date().getMonth()
+          new Date(person.dueDate).getMonth() === new Date().getMonth() &&
+          new Date(person.dueDate).getFullYear() === new Date().getFullYear()
       );
       setShowData(updatedData);
     } else if (showBy === "today") {
       updatedData = updatedData.filter(
         (person) =>
           new Date(person.dueDate).getDate() === new Date().getDate() &&
-          new Date(person.dueDate).getMonth() === new Date().getMonth()
+          new Date(person.dueDate).getMonth() === new Date().getMonth() &&
+          new Date(person.dueDate).getFullYear() === new Date().getFullYear()
+      );
+      setShowData(updatedData);
+    } else if (showBy === "tomorrow") {
+      updatedData = updatedData.filter(
+        (person) =>
+          new Date(person.dueDate).getDate() === new Date().getDate() + 1 &&
+          new Date(person.dueDate).getMonth() === new Date().getMonth() &&
+          new Date(person.dueDate).getFullYear() === new Date().getFullYear()
       );
       setShowData(updatedData);
     }
@@ -93,6 +103,9 @@ const List = () => {
             </li>
             <li className="tab col s3" onClick={() => setShowBy("today")}>
               <a href="#test2">Today</a>
+            </li>
+            <li className="tab col s3" onClick={() => setShowBy("tomorrow")}>
+              <a href="#test2">Tomorrow</a>
             </li>
             <li className="tab col s3" onClick={() => setShowBy("month")}>
               <a href="#test2">Monthly</a>

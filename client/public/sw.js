@@ -59,3 +59,24 @@ self.addEventListener("fetch", (event) => {
       })
   );
 });
+
+self.addEventListener("push", (event) => {
+  let data = {
+    title: "New!",
+    content: "Something new happened",
+    openUrl: "/",
+  };
+  if (event.data) {
+    data = JSON.parse(event.data.text());
+  }
+  const options = {
+    body: data.content,
+    dir: "ltr",
+    lang: "en-US",
+    vibrate: [200, 50, 200],
+    data: {
+      url: data.openUrl,
+    },
+  };
+  event.waitUntil(self.registration.showNotification(data.title, options));
+});
