@@ -71,7 +71,7 @@ const List = () => {
   };
 
   return (
-    <div style={{ width: "90%", maxWidth: "500px", margin: "10px auto" }}>
+    <div style={{ width: "99%", maxWidth: "500px", margin: "10px auto" }}>
       <div className="row">
         <div className="col s12">
           <ul className="tabs" ref={select}>
@@ -117,6 +117,7 @@ const List = () => {
           <tr>
             <th>Name</th>
             <th>Amount</th>
+            <th>Date</th>
             <th>Due Date</th>
           </tr>
         </thead>
@@ -133,7 +134,7 @@ const List = () => {
                   {" "}
                   <Link
                     style={{ textDecoration: "underline", color: "blue" }}
-                    to={`/person/${person._id}`}
+                    to={`/?id=${person._id}`}
                   >
                     {person.name}
                     <i className="material-icons" style={{ fontSize: "15px" }}>
@@ -142,9 +143,8 @@ const List = () => {
                   </Link>{" "}
                 </td>
                 <td>{person.amount}</td>
-                <td>
-                  {moment(new Date(person.dueDate)).format("Do MMMM YYYY")}
-                </td>
+                <td>{moment(new Date(person.date)).format("DD/MM/YY")}</td>
+                <td>{moment(new Date(person.dueDate)).format("DD/MM/YY")}</td>
                 <td
                   style={{ cursor: "pointer" }}
                   onClick={() => deletePerson(person._id)}

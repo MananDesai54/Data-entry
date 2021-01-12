@@ -68,10 +68,7 @@ app.get("/", (_, res) => {
 
 app.post("/auth", (req, res) => {
   const { name, password }: { name: string; password: string } = req.body;
-  if (
-    (name.toLowerCase() === "vrunda" && password === "vrunda6977") ||
-    (name.toLowerCase() === "nilesh" && password === "nilesh1976")
-  ) {
+  if (name.toLowerCase() === "vrunda" && password === "vrunda6977") {
     res.status(200).json("Login");
   } else {
     res.status(400).json({
@@ -113,6 +110,7 @@ app.get("/:id", async (req, res) => {
 app.post("/", async (req, res) => {
   const { name, amount, date, dueDate } = req.body;
   if (!name || !amount || !date || !dueDate) {
+    console.log(name, amount, date, dueDate);
     return res.status(400).json({
       message: "Provide all fields",
     });
@@ -122,6 +120,7 @@ app.post("/", async (req, res) => {
       name,
       amount,
       date,
+      dueDate,
     });
     await person.save();
     return res.json(person);

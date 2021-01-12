@@ -110,8 +110,7 @@ app.get("/", function (_, res) {
 });
 app.post("/auth", function (req, res) {
     var _a = req.body, name = _a.name, password = _a.password;
-    if ((name.toLowerCase() === "vrunda" && password === "vrunda6977") ||
-        (name.toLowerCase() === "nilesh" && password === "nilesh1976")) {
+    if (name.toLowerCase() === "vrunda" && password === "vrunda6977") {
         res.status(200).json("Login");
     }
     else {
@@ -177,6 +176,7 @@ app.post("/", function (req, res) { return __awaiter(void 0, void 0, void 0, fun
             case 0:
                 _a = req.body, name = _a.name, amount = _a.amount, date = _a.date, dueDate = _a.dueDate;
                 if (!name || !amount || !date || !dueDate) {
+                    console.log(name, amount, date, dueDate);
                     return [2 /*return*/, res.status(400).json({
                             message: "Provide all fields",
                         })];
@@ -188,6 +188,7 @@ app.post("/", function (req, res) { return __awaiter(void 0, void 0, void 0, fun
                     name: name,
                     amount: amount,
                     date: date,
+                    dueDate: dueDate,
                 });
                 return [4 /*yield*/, person.save()];
             case 2:

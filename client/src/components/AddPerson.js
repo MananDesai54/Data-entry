@@ -1,40 +1,90 @@
 import { useEffect, useRef, useState } from "react";
 import M from "materialize-css";
 import { useLink } from "../hooks/useLink";
+import moment from "moment";
+import { setDue } from "../setDue";
 
 const AddPerson = (props) => {
+  const editable = props.location.search.length > 0;
+
   const [name, setName] = useState("");
   const [amount, setAmount] = useState("");
+  const [years, setYears] = useState("");
+  const [dueDate, setDueDate] = useState("");
+  const [date, setDate] = useState("");
   const [response, setResponse] = useState({});
-  const datePicker = useRef();
   const selectRef = useRef();
-  useEffect(() => {
-    M.Datepicker.init(datePicker.current);
-    M.FormSelect.init(selectRef.current);
-  });
+
   const link = useLink();
 
+  useEffect(() => {
+    M.FormSelect.init(selectRef.current);
+    if (editable) {
+      const getPerson = async () => {
+        const response = await fetch(
+          `${link}/${props.location.search.split("=")[1]}`
+        );
+        const body = await response.json();
+        if (body.message) {
+          setResponse({ message: body.message, type: "danger" });
+          setTimeout(() => {
+            setResponse({});
+          }, 3000);
+        } else {
+          setName(body.name);
+          setAmount(body.amount);
+          setDueDate(new Date(body.dueDate));
+          setYears(
+            new Date(body.dueDate).getFullYear() -
+              new Date(body.date).getFullYear()
+          );
+          setDate(
+            `${new Date(body.date).getDate()}/${
+              new Date(body.date).getMonth() + 1
+            }/${new Date(body.date).getFullYear()}`
+          );
+        }
+      };
+      getPerson();
+    } else {
+      setName("");
+      setAmount("");
+      setDate("");
+      setYears("");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editable]);
   const submitHandler = async (e) => {
     e.preventDefault();
-    const response = await fetch(link, {
-      method: "POST",
-      body: JSON.stringify({
-        name,
-        amount,
-        date: new Date(datePicker.current.value).getTime(),
-      }),
-      headers: {
-        "Content-type": "application/json",
-      },
-    });
+    console.log(setDue(years, date).getTime());
+    const response = await fetch(
+      !editable ? link : `${link}/${props.location.search.split("=")[1]}`,
+      {
+        method: editable ? "PUT" : "POST",
+        body: JSON.stringify({
+          name,
+          amount,
+          date: new Date(
+            `${date.split("/")[1]}/${date.split("/")[0]}/${date.split("/")[2]}`
+          ).getTime(),
+          dueDate: setDue(years, date).getTime(),
+        }),
+        headers: {
+          "Content-type": "application/json",
+        },
+      }
+    );
     const body = await response.json();
     if (body.message) {
       setResponse({ message: body.message, type: "danger" });
     } else {
       setName("");
       setAmount("");
-      datePicker.current.value = "";
-      setResponse({ message: "Person Added", type: "success" });
+      setDate("");
+      setResponse({
+        message: editable ? "Person updated" : "Person Added",
+        type: "success",
+      });
       props.history.push("/list");
     }
     setTimeout(() => {
@@ -44,7 +94,6 @@ const AddPerson = (props) => {
   useEffect(() => {
     return () => setResponse("");
   }, []);
-
   return (
     <div
       className="row"
@@ -82,26 +131,54 @@ const AddPerson = (props) => {
           <div className="input-field col s12">
             <i className="material-icons prefix">event</i>
             <input
-              ref={datePicker}
+              value={date}
+              onChange={(e) => {
+                setDate(e.target.value);
+                setDueDate(setDue(years, date));
+              }}
+              id="Date"
               type="text"
-              className="datepicker"
-              name="date"
-              id="date"
+              className="validate"
             />
-            <label htmlFor="date">Date</label>
+            <label htmlFor="Date">Date(DD/MM/YYYY)</label>
           </div>
           <div className="row">
             <div className="input-field col s12">
-              <select ref={selectRef} className="browser-default">
-                <option defaultValue="" disabled selected>
+              <span>Year after Account closes</span>
+              <select
+                value={years}
+                onChange={(e) => {
+                  setYears(e.target.value);
+                  setDueDate(setDue(years, date));
+                }}
+                ref={selectRef}
+                className="browser-default"
+                style={{ borderColor: "black" }}
+              >
+                <option disabled value="">
                   Year after closes
                 </option>
-                <option defaultValue="1">1 year</option>
-                <option defaultValue="1">2 years , 7 months</option>
-                <option defaultValue="2">5 years</option>
-                <option defaultValue="3">10 years</option>
+                <option defaultValue="1">1</option>
+                <option defaultValue="8.7">8.7</option>
+                <option defaultValue="5">5</option>
+                <option defaultValue="10">10</option>
               </select>
             </div>
+          </div>
+          <span>Due date</span>
+          <div className="input-field col s12">
+            <i className="material-icons prefix">event</i>
+            <input
+              type="text"
+              className="validate"
+              name="dueDate"
+              id="dueDate"
+              disabled
+              value={
+                date ? moment(setDue(years, date)).format("Do MMMM YYYY") : ""
+              }
+              onChange={() => setDue(years, date)}
+            />
           </div>
         </div>
         {response && (
