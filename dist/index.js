@@ -45,6 +45,8 @@ var morgan_1 = __importDefault(require("morgan"));
 var cors_1 = __importDefault(require("cors"));
 var helmet_1 = __importDefault(require("helmet"));
 var mongoose_1 = require("mongoose");
+var node_schedule_1 = __importDefault(require("node-schedule"));
+var web_push_1 = __importDefault(require("web-push"));
 dotenv_1.default.config();
 var app = express_1.default();
 var PORT = process.env.PORT || 5000;
@@ -104,6 +106,74 @@ var subscriptionModel = new mongoose_1.Schema({
     },
 });
 var Subscription = mongoose_1.model("Subscription", subscriptionModel);
+/**
+ * Schedule push notifications
+ */
+node_schedule_1.default.scheduleJob("30 10 * * *", function () { return __awaiter(void 0, void 0, void 0, function () {
+    var persons, filteredPersons, message_1, todayPersons_1, tomorrowPersons_1, subs, error_2;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                _a.trys.push([0, 5, , 6]);
+                return [4 /*yield*/, Person.find({})];
+            case 1:
+                persons = _a.sent();
+                filteredPersons = persons.filter(function (person) { return new Date(person.dueDate).getTime() > Date.now(); });
+                if (!(filteredPersons.length === 0)) return [3 /*break*/, 2];
+                message_1 = "No more dues are remaining";
+                return [3 /*break*/, 4];
+            case 2:
+                todayPersons_1 = persons.filter(function (person) {
+                    return new Date(person.dueDate).getDate() === new Date().getDate() &&
+                        new Date(person.dueDate).getMonth() === new Date().getMonth() &&
+                        new Date(person.dueDate).getFullYear() === new Date().getFullYear();
+                });
+                console.log(todayPersons_1);
+                console.log("============================================");
+                tomorrowPersons_1 = persons.filter(function (person) {
+                    return new Date(person.dueDate).getDate() === new Date().getDate() + 1 &&
+                        new Date(person.dueDate).getMonth() === new Date().getMonth() &&
+                        new Date(person.dueDate).getFullYear() === new Date().getFullYear();
+                });
+                console.log(tomorrowPersons_1);
+                message_1 = "Your Post due reminder";
+                web_push_1.default.setVapidDetails("mailto:test@test.com", process.env.PUBLIC_VAPID_KEY, process.env.PRIVATE_VAPID_KEY);
+                return [4 /*yield*/, Subscription.find({})];
+            case 3:
+                subs = _a.sent();
+                subs.forEach(function (sub) { return __awaiter(void 0, void 0, void 0, function () {
+                    var subscription;
+                    return __generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0:
+                                subscription = sub.subscription;
+                                return [4 /*yield*/, web_push_1.default.sendNotification({
+                                        endpoint: subscription.endpoint,
+                                        keys: {
+                                            auth: subscription.keys.auth,
+                                            p256dh: subscription.keys.p256dh,
+                                        },
+                                    }, JSON.stringify({
+                                        title: message_1,
+                                        content: "You have " + todayPersons_1.length + " dues Today and " + tomorrowPersons_1.length + " dues tomorrow",
+                                        openUrl: "/list",
+                                    }))];
+                            case 1:
+                                _a.sent();
+                                return [2 /*return*/];
+                        }
+                    });
+                }); });
+                _a.label = 4;
+            case 4: return [3 /*break*/, 6];
+            case 5:
+                error_2 = _a.sent();
+                console.log(error_2.message);
+                return [3 /*break*/, 6];
+            case 6: return [2 /*return*/];
+        }
+    });
+}); });
 //cors & helmet => for security
 app.use(cors_1.default());
 app.use(helmet_1.default());
@@ -116,7 +186,7 @@ app.get("/", function (_, res) {
     res.json("API running.");
 });
 app.post("/subscribe", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var subscription, sub, error_2;
+    var subscription, sub, error_3;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -124,7 +194,8 @@ app.post("/subscribe", function (req, res) { return __awaiter(void 0, void 0, vo
                 console.log(subscription);
                 _a.label = 1;
             case 1:
-                _a.trys.push([1, 3, , 4]);
+                _a.trys.push([1, 4, , 5]);
+                if (!subscription) return [3 /*break*/, 3];
                 sub = new Subscription({
                     subscription: subscription,
                 });
@@ -134,14 +205,15 @@ app.post("/subscribe", function (req, res) { return __awaiter(void 0, void 0, vo
                 return [2 /*return*/, res.status(200).json({
                         subscription: sub,
                     })];
-            case 3:
-                error_2 = _a.sent();
-                console.log(error_2.message);
+            case 3: return [3 /*break*/, 5];
+            case 4:
+                error_3 = _a.sent();
+                console.log(error_3.message);
                 res.status(500).json({
                     message: "Something went wrong",
                 });
-                return [3 /*break*/, 4];
-            case 4: return [2 /*return*/];
+                return [3 /*break*/, 5];
+            case 5: return [2 /*return*/];
         }
     });
 }); });
@@ -157,7 +229,7 @@ app.post("/auth", function (req, res) {
     }
 });
 app.get("/data", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var person, error_3;
+    var person, error_4;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -167,8 +239,8 @@ app.get("/data", function (req, res) { return __awaiter(void 0, void 0, void 0, 
                 person = _a.sent();
                 return [2 /*return*/, res.json(person)];
             case 2:
-                error_3 = _a.sent();
-                console.log(error_3.message);
+                error_4 = _a.sent();
+                console.log(error_4.message);
                 res.status(500).json({
                     message: "Something went wrong",
                 });
@@ -178,7 +250,7 @@ app.get("/data", function (req, res) { return __awaiter(void 0, void 0, void 0, 
     });
 }); });
 app.get("/:id", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var id, person, error_4;
+    var id, person, error_5;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -196,8 +268,8 @@ app.get("/:id", function (req, res) { return __awaiter(void 0, void 0, void 0, f
                 }
                 return [2 /*return*/, res.json(person)];
             case 3:
-                error_4 = _a.sent();
-                console.log(error_4.message);
+                error_5 = _a.sent();
+                console.log(error_5.message);
                 res.status(500).json({
                     message: "Something went wrong",
                 });
@@ -207,7 +279,7 @@ app.get("/:id", function (req, res) { return __awaiter(void 0, void 0, void 0, f
     });
 }); });
 app.post("/", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var _a, name, amount, date, dueDate, person, error_5;
+    var _a, name, amount, date, dueDate, person, error_6;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
@@ -232,8 +304,8 @@ app.post("/", function (req, res) { return __awaiter(void 0, void 0, void 0, fun
                 _b.sent();
                 return [2 /*return*/, res.json(person)];
             case 3:
-                error_5 = _b.sent();
-                console.log(error_5.message);
+                error_6 = _b.sent();
+                console.log(error_6.message);
                 res.status(500).json({
                     message: "Something went wrong",
                 });
@@ -243,7 +315,7 @@ app.post("/", function (req, res) { return __awaiter(void 0, void 0, void 0, fun
     });
 }); });
 app.put("/:id", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var _a, name, amount, date, dueDate, id, person, error_6;
+    var _a, name, amount, date, dueDate, id, person, error_7;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
@@ -268,8 +340,8 @@ app.put("/:id", function (req, res) { return __awaiter(void 0, void 0, void 0, f
                 _b.sent();
                 return [2 /*return*/, res.json(person)];
             case 4:
-                error_6 = _b.sent();
-                console.log(error_6.message);
+                error_7 = _b.sent();
+                console.log(error_7.message);
                 res.status(500).json({
                     message: "Something went wrong",
                 });
@@ -279,7 +351,7 @@ app.put("/:id", function (req, res) { return __awaiter(void 0, void 0, void 0, f
     });
 }); });
 app.delete("/:id", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var id, person, error_7;
+    var id, person, error_8;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -292,8 +364,8 @@ app.delete("/:id", function (req, res) { return __awaiter(void 0, void 0, void 0
                 person = _a.sent();
                 return [2 /*return*/, res.json({ success: true })];
             case 3:
-                error_7 = _a.sent();
-                console.log(error_7.message);
+                error_8 = _a.sent();
+                console.log(error_8.message);
                 res.status(500).json({
                     message: "Something went wrong",
                 });

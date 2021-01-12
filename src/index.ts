@@ -4,6 +4,8 @@ import morgan from "morgan";
 import cors from "cors";
 import helmet from "helmet";
 import { connect, Schema, model } from "mongoose";
+import schedule from "node-schedule";
+import webPush from "web-push";
 dotenv.config();
 
 const app = express();
@@ -60,6 +62,64 @@ const subscriptionModel = new Schema({
 
 const Subscription = model("Subscription", subscriptionModel);
 
+/**
+ * Schedule push notifications
+ */
+schedule.scheduleJob("30 10 * * *", async () => {
+  try {
+    const persons: [] = await Person.find({});
+    const filteredPersons = persons.filter(
+      (person: any) => new Date(person.dueDate).getTime() > Date.now()
+    );
+    let message: string;
+    if (filteredPersons.length === 0) {
+      message = "No more dues are remaining";
+    } else {
+      const todayPersons = persons.filter(
+        (person: any) =>
+          new Date(person.dueDate).getDate() === new Date().getDate() &&
+          new Date(person.dueDate).getMonth() === new Date().getMonth() &&
+          new Date(person.dueDate).getFullYear() === new Date().getFullYear()
+      );
+      console.log(todayPersons);
+      console.log("============================================");
+      const tomorrowPersons = persons.filter(
+        (person: any) =>
+          new Date(person.dueDate).getDate() === new Date().getDate() + 1 &&
+          new Date(person.dueDate).getMonth() === new Date().getMonth() &&
+          new Date(person.dueDate).getFullYear() === new Date().getFullYear()
+      );
+      console.log(tomorrowPersons);
+      message = "Your Post due reminder";
+      webPush.setVapidDetails(
+        `mailto:test@test.com`,
+        process.env.PUBLIC_VAPID_KEY,
+        process.env.PRIVATE_VAPID_KEY
+      );
+      const subs: [] = await Subscription.find({});
+      subs.forEach(async (sub: any) => {
+        const { subscription } = sub;
+        await webPush.sendNotification(
+          {
+            endpoint: subscription.endpoint,
+            keys: {
+              auth: subscription.keys.auth,
+              p256dh: subscription.keys.p256dh,
+            },
+          },
+          JSON.stringify({
+            title: message,
+            content: `You have ${todayPersons.length} dues Today and ${tomorrowPersons.length} dues tomorrow`,
+            openUrl: "/list",
+          })
+        );
+      });
+    }
+  } catch (error) {
+    console.log(error.message);
+  }
+});
+
 //cors & helmet => for security
 app.use(cors());
 app.use(helmet());
@@ -79,14 +139,16 @@ app.post("/subscribe", async (req, res) => {
   const { subscription } = req.body;
   console.log(subscription);
   try {
-    const sub = new Subscription({
-      subscription,
-    });
+    if (subscription) {
+      const sub = new Subscription({
+        subscription,
+      });
 
-    await sub.save();
-    return res.status(200).json({
-      subscription: sub,
-    });
+      await sub.save();
+      return res.status(200).json({
+        subscription: sub,
+      });
+    }
   } catch (error) {
     console.log(error.message);
     res.status(500).json({
