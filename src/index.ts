@@ -39,6 +39,10 @@ const personModel = new Schema({
     type: Number,
     required: true,
   },
+  date: {
+    type: Date,
+    required: true,
+  },
   dueDate: {
     type: Date,
     required: true,
@@ -60,6 +64,20 @@ app.use(express.json());
 
 app.get("/", (_, res) => {
   res.json("API running.");
+});
+
+app.post("/auth", (req, res) => {
+  const { name, password }: { name: string; password: string } = req.body;
+  if (
+    (name.toLowerCase() === "vrunda" && password === "vrunda6977") ||
+    (name.toLowerCase() === "nilesh" && password === "nilesh1976")
+  ) {
+    res.status(200).json("Login");
+  } else {
+    res.status(400).json({
+      message: "Invalid credentials",
+    });
+  }
 });
 
 app.get("/data", async (req, res) => {
@@ -93,8 +111,8 @@ app.get("/:id", async (req, res) => {
 });
 
 app.post("/", async (req, res) => {
-  const { name, amount, dueDate } = req.body;
-  if (!name || !amount || !dueDate) {
+  const { name, amount, date, dueDate } = req.body;
+  if (!name || !amount || !date || !dueDate) {
     return res.status(400).json({
       message: "Provide all fields",
     });
@@ -103,7 +121,7 @@ app.post("/", async (req, res) => {
     const person = new Person({
       name,
       amount,
-      dueDate,
+      date,
     });
     await person.save();
     return res.json(person);
@@ -115,12 +133,13 @@ app.post("/", async (req, res) => {
   }
 });
 app.put("/:id", async (req, res) => {
-  const { name, amount, dueDate } = req.body;
+  const { name, amount, date, dueDate } = req.body;
   const { id } = req.params;
   try {
     const person = await Person.findById(id);
     if (name) person.name = name;
     if (amount) person.amount = amount;
+    if (date) person.date = date;
     if (dueDate) person.dueDate = dueDate;
     await person.save();
     return res.json(person);

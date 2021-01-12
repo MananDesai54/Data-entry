@@ -87,6 +87,10 @@ var personModel = new mongoose_1.Schema({
         type: Number,
         required: true,
     },
+    date: {
+        type: Date,
+        required: true,
+    },
     dueDate: {
         type: Date,
         required: true,
@@ -103,6 +107,18 @@ if (process.env.NODE_ENV === "development") {
 app.use(express_1.default.json());
 app.get("/", function (_, res) {
     res.json("API running.");
+});
+app.post("/auth", function (req, res) {
+    var _a = req.body, name = _a.name, password = _a.password;
+    if ((name.toLowerCase() === "vrunda" && password === "vrunda6977") ||
+        (name.toLowerCase() === "nilesh" && password === "nilesh1976")) {
+        res.status(200).json("Login");
+    }
+    else {
+        res.status(400).json({
+            message: "Invalid credentials",
+        });
+    }
 });
 app.get("/data", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var person, error_2;
@@ -155,12 +171,12 @@ app.get("/:id", function (req, res) { return __awaiter(void 0, void 0, void 0, f
     });
 }); });
 app.post("/", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var _a, name, amount, dueDate, person, error_4;
+    var _a, name, amount, date, dueDate, person, error_4;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
-                _a = req.body, name = _a.name, amount = _a.amount, dueDate = _a.dueDate;
-                if (!name || !amount || !dueDate) {
+                _a = req.body, name = _a.name, amount = _a.amount, date = _a.date, dueDate = _a.dueDate;
+                if (!name || !amount || !date || !dueDate) {
                     return [2 /*return*/, res.status(400).json({
                             message: "Provide all fields",
                         })];
@@ -171,7 +187,7 @@ app.post("/", function (req, res) { return __awaiter(void 0, void 0, void 0, fun
                 person = new Person({
                     name: name,
                     amount: amount,
-                    dueDate: dueDate,
+                    date: date,
                 });
                 return [4 /*yield*/, person.save()];
             case 2:
@@ -189,11 +205,11 @@ app.post("/", function (req, res) { return __awaiter(void 0, void 0, void 0, fun
     });
 }); });
 app.put("/:id", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var _a, name, amount, dueDate, id, person, error_5;
+    var _a, name, amount, date, dueDate, id, person, error_5;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
-                _a = req.body, name = _a.name, amount = _a.amount, dueDate = _a.dueDate;
+                _a = req.body, name = _a.name, amount = _a.amount, date = _a.date, dueDate = _a.dueDate;
                 id = req.params.id;
                 _b.label = 1;
             case 1:
@@ -205,6 +221,8 @@ app.put("/:id", function (req, res) { return __awaiter(void 0, void 0, void 0, f
                     person.name = name;
                 if (amount)
                     person.amount = amount;
+                if (date)
+                    person.date = date;
                 if (dueDate)
                     person.dueDate = dueDate;
                 return [4 /*yield*/, person.save()];

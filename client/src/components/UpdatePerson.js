@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import M from "materialize-css";
 import moment from "moment";
+import { useLink } from "../hooks/useLink";
 
 const UpdatePerson = (props) => {
   const [response, setResponse] = useState({});
@@ -9,11 +10,12 @@ const UpdatePerson = (props) => {
   useEffect(() => {
     M.Datepicker.init(datePicker.current);
   });
+  const link = useLink();
   const id = props.match.params.id;
 
   useEffect(() => {
     const getPerson = async () => {
-      const response = await fetch(`https://post-data-api.herokuapp.com/${id}`);
+      const response = await fetch(`${link}/${id}`);
       const body = await response.json();
       if (body.message) {
         setResponse({ message: body.message, type: "danger" });
@@ -22,7 +24,7 @@ const UpdatePerson = (props) => {
         }, 3000);
       } else {
         setPerson(body);
-        datePicker.current.value = moment(new Date(body.dueDate)).format(
+        datePicker.current.value = moment(new Date(body.date)).format(
           "Do MMMM YYYY"
         );
       }
@@ -33,12 +35,12 @@ const UpdatePerson = (props) => {
 
   const submitHandler = async (e) => {
     e.preventDefault();
-    const response = await fetch(`https://post-data-api.herokuapp.com/${id}`, {
+    const response = await fetch(`${link}/${id}`, {
       method: "PUT",
       body: JSON.stringify({
         name: person.name,
         amount: person.amount,
-        dueDate: new Date(datePicker.current.value).getTime(),
+        date: new Date(datePicker.current.value).getTime(),
       }),
       headers: {
         "Content-type": "application/json",
@@ -95,7 +97,7 @@ const UpdatePerson = (props) => {
               ref={datePicker}
               type="text"
               className="datepicker"
-              name="dueDate"
+              name="date"
               id="date"
             />
           </div>
@@ -110,7 +112,20 @@ const UpdatePerson = (props) => {
             {response.message}
           </p>
         )}
-        <button className="btn pink">Update</button>
+        <button
+          className="btn pink"
+          type="button"
+          onClick={() => props.history.push("/list")}
+        >
+          Cancel
+        </button>
+        <button
+          style={{ marginLeft: "10px" }}
+          className="btn pink"
+          type="submit"
+        >
+          Update
+        </button>
       </form>
     </div>
   );

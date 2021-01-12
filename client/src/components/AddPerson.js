@@ -1,23 +1,27 @@
 import { useEffect, useRef, useState } from "react";
 import M from "materialize-css";
+import { useLink } from "../hooks/useLink";
 
-const AddPerson = () => {
+const AddPerson = (props) => {
   const [name, setName] = useState("");
   const [amount, setAmount] = useState("");
   const [response, setResponse] = useState({});
   const datePicker = useRef();
+  const selectRef = useRef();
   useEffect(() => {
     M.Datepicker.init(datePicker.current);
+    M.FormSelect.init(selectRef.current);
   });
+  const link = useLink();
 
   const submitHandler = async (e) => {
     e.preventDefault();
-    const response = await fetch("https://post-data-api.herokuapp.com/", {
+    const response = await fetch(link, {
       method: "POST",
       body: JSON.stringify({
         name,
         amount,
-        dueDate: new Date(datePicker.current.value).getTime(),
+        date: new Date(datePicker.current.value).getTime(),
       }),
       headers: {
         "Content-type": "application/json",
@@ -31,6 +35,7 @@ const AddPerson = () => {
       setAmount("");
       datePicker.current.value = "";
       setResponse({ message: "Person Added", type: "success" });
+      props.history.push("/list");
     }
     setTimeout(() => {
       setResponse({});
@@ -72,6 +77,7 @@ const AddPerson = () => {
             <label htmlFor="Amount">Amount</label>
           </div>
         </div>
+
         <div className="row">
           <div className="input-field col s12">
             <i className="material-icons prefix">event</i>
@@ -79,10 +85,23 @@ const AddPerson = () => {
               ref={datePicker}
               type="text"
               className="datepicker"
-              name="dueDate"
+              name="date"
               id="date"
             />
             <label htmlFor="date">Date</label>
+          </div>
+          <div className="row">
+            <div className="input-field col s12">
+              <select ref={selectRef} className="browser-default">
+                <option defaultValue="" disabled selected>
+                  Year after closes
+                </option>
+                <option defaultValue="1">1 year</option>
+                <option defaultValue="1">2 years , 7 months</option>
+                <option defaultValue="2">5 years</option>
+                <option defaultValue="3">10 years</option>
+              </select>
+            </div>
           </div>
         </div>
         {response && (
@@ -95,7 +114,20 @@ const AddPerson = () => {
             {response.message}
           </p>
         )}
-        <button className="btn pink">Add</button>
+        <button
+          className="btn pink"
+          type="button"
+          onClick={() => props.history.push("/list")}
+        >
+          Cancel
+        </button>
+        <button
+          style={{ marginLeft: "10px" }}
+          className="btn pink"
+          type="submit"
+        >
+          Submit
+        </button>
       </form>
     </div>
   );

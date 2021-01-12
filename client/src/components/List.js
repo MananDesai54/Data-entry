@@ -2,18 +2,21 @@ import { useEffect, useRef, useState } from "react";
 import moment from "moment";
 import M from "materialize-css";
 import { Link } from "react-router-dom";
+import { useLink } from "../hooks/useLink";
 
 const List = () => {
   const [data, setData] = useState([]);
   const [showData, setShowData] = useState([]);
   const select = useRef();
-  const [showBy, setShowBy] = useState("today");
+  const [showBy, setShowBy] = useState("all");
   const [search, setSearch] = useState("");
   const [error, setError] = useState("");
 
+  const link = useLink();
+
   useEffect(() => {
     const fetchData = async () => {
-      const response = await fetch("https://post-data-api.herokuapp.com/data");
+      const response = await fetch(`${link}/data`);
       const body = await response.json();
       body.sort(function (a, b) {
         return new Date(a.dueDate) - new Date(b.dueDate);
@@ -22,7 +25,7 @@ const List = () => {
       setShowData(body);
     };
     fetchData();
-  }, []);
+  }, [link]);
 
   useEffect(() => {
     M.Tabs.init(select.current);
@@ -52,7 +55,7 @@ const List = () => {
   }, [showBy, data, search]);
 
   const deletePerson = async (id) => {
-    const response = await fetch(`https://post-data-api.herokuapp.com/${id}`, {
+    const response = await fetch(`${link}/${id}`, {
       method: "DELETE",
     });
     const body = await response.json();
@@ -73,12 +76,12 @@ const List = () => {
         <div className="col s12">
           <ul className="tabs" ref={select}>
             <li className="tab col s3" onClick={() => setShowBy("all")}>
-              <a href="#test1">All</a>
+              <a className="active" href="#test1">
+                All
+              </a>
             </li>
             <li className="tab col s3" onClick={() => setShowBy("today")}>
-              <a className="active" href="#test2">
-                Today
-              </a>
+              <a href="#test2">Today</a>
             </li>
             <li className="tab col s3" onClick={() => setShowBy("month")}>
               <a href="#test2">Monthly</a>
@@ -109,7 +112,7 @@ const List = () => {
           {error}
         </p>
       )}
-      <table className="striped centered">
+      <table className="striped centered" style={{ marginBottom: "100px" }}>
         <thead>
           <tr>
             <th>Name</th>
@@ -129,12 +132,12 @@ const List = () => {
                 <td>
                   {" "}
                   <Link
-                    style={{ textDecoration: "underline", color: "black" }}
+                    style={{ textDecoration: "underline", color: "blue" }}
                     to={`/person/${person._id}`}
                   >
                     {person.name}
                     <i className="material-icons" style={{ fontSize: "15px" }}>
-                      launch
+                      edit
                     </i>
                   </Link>{" "}
                 </td>
