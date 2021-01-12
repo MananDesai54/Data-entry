@@ -10,6 +10,7 @@ const AddPerson = (props) => {
   const [name, setName] = useState("");
   const [amount, setAmount] = useState("");
   const [years, setYears] = useState("");
+  // eslint-disable-next-line no-unused-vars
   const [dueDate, setDueDate] = useState("");
   const [date, setDate] = useState("");
   const [response, setResponse] = useState({});

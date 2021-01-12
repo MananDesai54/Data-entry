@@ -97,6 +97,13 @@ var personModel = new mongoose_1.Schema({
     },
 });
 var Person = mongoose_1.model("Person", personModel);
+var subscriptionModel = new mongoose_1.Schema({
+    subscription: {
+        type: Object,
+        required: true,
+    },
+});
+var Subscription = mongoose_1.model("Subscription", subscriptionModel);
 //cors & helmet => for security
 app.use(cors_1.default());
 app.use(helmet_1.default());
@@ -108,6 +115,36 @@ app.use(express_1.default.json());
 app.get("/", function (_, res) {
     res.json("API running.");
 });
+app.post("/subscribe", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+    var subscription, sub, error_2;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                subscription = req.body.subscription;
+                console.log(subscription);
+                _a.label = 1;
+            case 1:
+                _a.trys.push([1, 3, , 4]);
+                sub = new Subscription({
+                    subscription: subscription,
+                });
+                return [4 /*yield*/, sub.save()];
+            case 2:
+                _a.sent();
+                return [2 /*return*/, res.status(200).json({
+                        subscription: sub,
+                    })];
+            case 3:
+                error_2 = _a.sent();
+                console.log(error_2.message);
+                res.status(500).json({
+                    message: "Something went wrong",
+                });
+                return [3 /*break*/, 4];
+            case 4: return [2 /*return*/];
+        }
+    });
+}); });
 app.post("/auth", function (req, res) {
     var _a = req.body, name = _a.name, password = _a.password;
     if (name.toLowerCase() === "vrunda" && password === "vrunda6977") {
@@ -120,7 +157,7 @@ app.post("/auth", function (req, res) {
     }
 });
 app.get("/data", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var person, error_2;
+    var person, error_3;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -130,8 +167,8 @@ app.get("/data", function (req, res) { return __awaiter(void 0, void 0, void 0, 
                 person = _a.sent();
                 return [2 /*return*/, res.json(person)];
             case 2:
-                error_2 = _a.sent();
-                console.log(error_2.message);
+                error_3 = _a.sent();
+                console.log(error_3.message);
                 res.status(500).json({
                     message: "Something went wrong",
                 });
@@ -141,7 +178,7 @@ app.get("/data", function (req, res) { return __awaiter(void 0, void 0, void 0, 
     });
 }); });
 app.get("/:id", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var id, person, error_3;
+    var id, person, error_4;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -159,8 +196,8 @@ app.get("/:id", function (req, res) { return __awaiter(void 0, void 0, void 0, f
                 }
                 return [2 /*return*/, res.json(person)];
             case 3:
-                error_3 = _a.sent();
-                console.log(error_3.message);
+                error_4 = _a.sent();
+                console.log(error_4.message);
                 res.status(500).json({
                     message: "Something went wrong",
                 });
@@ -170,7 +207,7 @@ app.get("/:id", function (req, res) { return __awaiter(void 0, void 0, void 0, f
     });
 }); });
 app.post("/", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var _a, name, amount, date, dueDate, person, error_4;
+    var _a, name, amount, date, dueDate, person, error_5;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
@@ -195,8 +232,8 @@ app.post("/", function (req, res) { return __awaiter(void 0, void 0, void 0, fun
                 _b.sent();
                 return [2 /*return*/, res.json(person)];
             case 3:
-                error_4 = _b.sent();
-                console.log(error_4.message);
+                error_5 = _b.sent();
+                console.log(error_5.message);
                 res.status(500).json({
                     message: "Something went wrong",
                 });
@@ -206,7 +243,7 @@ app.post("/", function (req, res) { return __awaiter(void 0, void 0, void 0, fun
     });
 }); });
 app.put("/:id", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var _a, name, amount, date, dueDate, id, person, error_5;
+    var _a, name, amount, date, dueDate, id, person, error_6;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
@@ -231,8 +268,8 @@ app.put("/:id", function (req, res) { return __awaiter(void 0, void 0, void 0, f
                 _b.sent();
                 return [2 /*return*/, res.json(person)];
             case 4:
-                error_5 = _b.sent();
-                console.log(error_5.message);
+                error_6 = _b.sent();
+                console.log(error_6.message);
                 res.status(500).json({
                     message: "Something went wrong",
                 });
@@ -242,7 +279,7 @@ app.put("/:id", function (req, res) { return __awaiter(void 0, void 0, void 0, f
     });
 }); });
 app.delete("/:id", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var id, person, error_6;
+    var id, person, error_7;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -255,8 +292,8 @@ app.delete("/:id", function (req, res) { return __awaiter(void 0, void 0, void 0
                 person = _a.sent();
                 return [2 /*return*/, res.json({ success: true })];
             case 3:
-                error_6 = _a.sent();
-                console.log(error_6.message);
+                error_7 = _a.sent();
+                console.log(error_7.message);
                 res.status(500).json({
                     message: "Something went wrong",
                 });

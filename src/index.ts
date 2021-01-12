@@ -51,6 +51,15 @@ const personModel = new Schema({
 
 const Person = model("Person", personModel);
 
+const subscriptionModel = new Schema({
+  subscription: {
+    type: Object,
+    required: true,
+  },
+});
+
+const Subscription = model("Subscription", subscriptionModel);
+
 //cors & helmet => for security
 app.use(cors());
 app.use(helmet());
@@ -64,6 +73,26 @@ app.use(express.json());
 
 app.get("/", (_, res) => {
   res.json("API running.");
+});
+
+app.post("/subscribe", async (req, res) => {
+  const { subscription } = req.body;
+  console.log(subscription);
+  try {
+    const sub = new Subscription({
+      subscription,
+    });
+
+    await sub.save();
+    return res.status(200).json({
+      subscription: sub,
+    });
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json({
+      message: "Something went wrong",
+    });
+  }
 });
 
 app.post("/auth", (req, res) => {

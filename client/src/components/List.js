@@ -8,6 +8,7 @@ const List = () => {
   const [data, setData] = useState([]);
   const [showData, setShowData] = useState([]);
   const select = useRef();
+  const floatingButton = useRef();
   const [showBy, setShowBy] = useState("all");
   const [search, setSearch] = useState("");
   const [error, setError] = useState("");
@@ -29,6 +30,7 @@ const List = () => {
 
   useEffect(() => {
     M.Tabs.init(select.current);
+    M.FloatingActionButton.init(floatingButton.current);
   });
 
   useEffect(() => {
@@ -72,6 +74,15 @@ const List = () => {
 
   return (
     <div style={{ width: "99%", maxWidth: "500px", margin: "10px auto" }}>
+      <div className="fixed-action-btn">
+        <Link
+          ref={floatingButton}
+          to="/"
+          className="btn-floating btn-large waves-effect waves-light red"
+        >
+          <i className="material-icons">add</i>
+        </Link>
+      </div>
       <div className="row">
         <div className="col s12">
           <ul className="tabs" ref={select}>

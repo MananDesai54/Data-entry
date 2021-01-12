@@ -1,19 +1,86 @@
-import "./App.css";
 import AddPerson from "./components/AddPerson";
 import "materialize-css/dist/css/materialize.min.css";
-import { BrowserRouter, Link, NavLink, Route } from "react-router-dom";
+import { BrowserRouter, NavLink, Route } from "react-router-dom";
 import List from "./components/List";
 import UpdatePerson from "./components/UpdatePerson";
 import Login from "./components/Login";
-import M from "materialize-css";
-import { Fragment, useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
+import { urlBase64ToUint8Array } from "./utils";
+import { useLink } from "./hooks/useLink";
+
+function showNotification() {
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.ready.then((reg) => {
+      reg.showNotification("Successfully subscribed.", {
+        body: "You have successfully subscribed for notifications",
+        vibrate: [100, 50, 200],
+        renotify: true,
+        tag: "Confirm notification",
+      });
+    });
+  }
+}
+
+function configureNotificationSubscription(link) {
+  let swReg;
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.ready.then((sw) => {
+      swReg = sw;
+      swReg.pushManager
+        .getSubscription()
+        .then((subscription) => {
+          if (!subscription) {
+            const publicVapidKey =
+              "BL7B8pa_DikwKC9h8CiYC1oLN5t56Zg2wdVVH7TSz6MsETbD2WfbeA2xHzPmnoFJ7QA0SJCoOmYuxJ9eamA2LSY";
+            const convertedVapidKey = urlBase64ToUint8Array(publicVapidKey);
+            return swReg.pushManager.subscribe({
+              userVisibleOnly: true,
+              applicationServerKey: convertedVapidKey,
+            });
+          } else {
+            console.log("You already have one subscription");
+          }
+        })
+        .then((newSubscription) => {
+          return fetch(`${link}/subscribe`, {
+            method: "POST",
+            body: JSON.stringify({ subscription: newSubscription }),
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+          });
+        })
+        .then((res) => {
+          if (res.ok) {
+            showNotification();
+          }
+        });
+    });
+  }
+}
 
 function App() {
-  const floatingButton = useRef();
   const [isAuth, setIsAuth] = useState(false);
+  const link = useLink();
+  /**
+   * Notification subscription
+   */
+  useEffect(() => {
+    if ("Notification" in window) {
+      Notification.requestPermission().then((choice) => {
+        console.log(choice);
+        if (choice !== "granted") {
+          console.log("Not Granted");
+        } else {
+          configureNotificationSubscription(link);
+        }
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
-    M.FloatingActionButton.init(floatingButton.current);
     if (localStorage.getItem("isLoggedIn")) {
       setIsAuth(true);
     }
@@ -66,15 +133,6 @@ function App() {
             )}
           </div>
         </nav>
-      </div>
-      <div className="fixed-action-btn">
-        <Link
-          ref={floatingButton}
-          to="/"
-          className="btn-floating btn-large waves-effect waves-light red"
-        >
-          <i className="material-icons">add</i>
-        </Link>
       </div>
       <div className="App">
         {isAuth ? (
