@@ -61,6 +61,7 @@ self.addEventListener("fetch", (event) => {
 });
 
 self.addEventListener("push", (event) => {
+  console.log("Notification received");
   let data = {
     title: "New!",
     content: "Something new happened",

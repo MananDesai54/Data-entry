@@ -65,7 +65,7 @@ const Subscription = model("Subscription", subscriptionModel);
 /**
  * Schedule push notifications
  */
-schedule.scheduleJob("30 10 * * *", async () => {
+schedule.scheduleJob("30 17 */1 * *", async () => {
   try {
     const persons: [] = await Person.find({});
     const filteredPersons = persons.filter(
@@ -116,7 +116,7 @@ schedule.scheduleJob("30 10 * * *", async () => {
       });
     }
   } catch (error) {
-    console.log(error.message);
+    console.log(error);
   }
 });
 

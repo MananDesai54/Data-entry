@@ -109,7 +109,7 @@ var Subscription = mongoose_1.model("Subscription", subscriptionModel);
 /**
  * Schedule push notifications
  */
-node_schedule_1.default.scheduleJob("30 10 * * *", function () { return __awaiter(void 0, void 0, void 0, function () {
+node_schedule_1.default.scheduleJob("30 17 */1 * *", function () { return __awaiter(void 0, void 0, void 0, function () {
     var persons, filteredPersons, message_1, todayPersons_1, tomorrowPersons_1, subs, error_2;
     return __generator(this, function (_a) {
         switch (_a.label) {
@@ -168,7 +168,7 @@ node_schedule_1.default.scheduleJob("30 10 * * *", function () { return __awaite
             case 4: return [3 /*break*/, 6];
             case 5:
                 error_2 = _a.sent();
-                console.log(error_2.message);
+                console.log(error_2);
                 return [3 /*break*/, 6];
             case 6: return [2 /*return*/];
         }
